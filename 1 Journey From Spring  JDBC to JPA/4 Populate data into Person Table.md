@@ -1,16 +1,6 @@
- JPA and Hibernate in 10 Steps with H2
 
-### Knowledge
+## Complete Code Example
 
-H2 là một cơ sở dữ liệu quan hệ (Relational database), mã nguồn mở, gọn nhẹ, được viết bằng ngôn ngữ Java. Bộ cài đặt H2 có dung lượng rất nhỏ, chỉ khoảng 8MB.
-Một trong các tính năng thú vị của H2 là bạn có thể tạo ra một cơ sở dữ liệu trên bộ nhớ (In Memory Database) thay vì được lưu trữ trên ổ cứng máy tính. Điều này làm cho tốc độ truy vấn và thao tác với dữ liệu rất nhanh. Tuy nhiên nếu bạn lựa chọn tính năng "In Memory Database" các dữ liệu chỉ tồn tại khi ứng dụng hoạt động, khi ứng dụng bị tắt (shutdown), các dữ liệu cũng sẽ bị xóa khỏi bộ nhớ.
-
-![alt text](https://s1.o7planning.com/vi/11893/images/19149447.png)
-
-H2 cung cấp cho bạn một công cụ quản trị có tên H2 Console, và bạn có làm việc với nó thông qua trình duyệt.
-
----
-## Complete Code
 
 ### /pom.xml
 
@@ -142,14 +132,32 @@ public class DatabaseDemoApplication {
 ### /src/main/resources/application.properties
 
 ```properties
-spring.h2.console.enabled=true
 spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+// Enabling H2 Console
+spring.h2.console.enabled=true
+// Custom H2 Console URL
+spring.h2.console.path=/h2
 ```
 ---
 
 ### /src/main/resources/data.sql
 
 ```
+INSERT INTO 
+  person (id, name, location, birth_date)
+VALUES
+    (1,'stackjava', 'stackjava',2012/5/6),
+    (2,'admin', 'admin1234',2019/5/6);
+```
+---
+### /src/main/resources/schema.sql
+
+```
+DROP TABLE IF EXISTS person;
 create table person
 (
    id integer not null,
@@ -182,6 +190,3 @@ public class DatabaseDemoApplicationTests {
 }
 ```
 ---
-
-##reference: 
-https://openplanning.net/11893/tuong-tac-spring-boot-jpa-va-co-so-du-lieu-h2

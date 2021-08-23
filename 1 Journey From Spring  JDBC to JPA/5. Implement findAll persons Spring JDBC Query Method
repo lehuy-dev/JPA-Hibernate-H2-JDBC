@@ -1,0 +1,308 @@
+
+## Complete Code Example
+
+#Knowledge
+1. JDBC (Java Database Connectivity) là một API tiêu chuẩn dùng để tương tác với các loại cơ sở dữ liệu quan hệ. JDBC có một tập hợp các class và các Interface dùng cho ứng dụng Java có thể nói chuyện với các cơ sở dữ liệu.
+![Alt Text](https://s1.o7planning.com/vi/10167/images/12685.png)
+
+	* DriverManager: Là một class, nó dùng để quản lý danh sách các Driver (database drivers). 
+	
+	* Driver: Là một Interface, nó dùng để liên kết các liên lạc với cơ sở dữ liệu, điều khiển các liên lạc với database. Một khi Driver được tải lên, lập trình viên không cần phải gọi nó một cách cụ thể.
+	
+	* Connection : Là một Interface với tất cả các method cho việc liên lạc với database. Nó mô tả nội dung liên lạc. tất cả các thông tin liên lạc với cơ sở dữ liệu là thông qua chỉ có đối tượng Connection.
+	* Statement : Là một Interface, gói gọn một câu lệnh SQL gửi tới cơ sở dữ liệu được phân tích, tổng hợp, lập kế hoạch và thực hiện.
+	* ResultSet: ResultSet đại diện cho tập hợp các bản ghi lấy do thực hiện truy vấn.
+	
+2. Java kết nối với database dựa trên nguyên tắc nào?
+Java sử dụng JDBC để làm việc với các cơ sở dữ liệu.
+
+![Alt Text](https://s1.o7planning.com/vi/10167/images/12669.png)
+
+Ví dụ bạn làm việc với cơ sở dữ liệu Oracle từ Java bạn cần phải có Driver (Đó là class điều khiển việc kết nối với loại cơ sở dữ liệu bạn muốn). Trong JDBC API chúng ta có java.sql.Driver, nó chỉ là một interface, và nó có sẵn trong JDK. Như vậy bạn phải download thư viện Driver ứng với loại Database mà bạn mong muốn.
+Chẳng hạn với Oracle thì class thi hành Interface java.sql.Driver đó là: oracle.jdbc.driver.OracleDriver
+java.sql.DriverManager là một class trong JDBC API. Nó làm nhiệm vụ quản lý các Driver.
+
+![Alt Text](https://s1.o7planning.com/vi/10167/images/12589.png)
+
+Chúng ta có 2 cách để làm việc với một loại cơ sở dữ liệu cụ thể nào đó.
+ 
+	* Cách 1: Bạn hãy cung cấp thư viện Driver điều khiển loại cơ sở dữ liệu đó, đây là cách trực tiếp. Nếu bạn dùng DB oracle (hoặc DB khác) bạn phải download thư viện dành cho loại DB này.
+	* Cách 2: Khai báo một "ODBC DataSource", và sử dụng cầu nối JDBC-ODBC để kết nối với "ODBC DataSource" kia. Cầu nối JDBC-ODBC là thứ có sẵn trong JDBC API.
+
+Câu hỏi của chúng ta là "ODBC DataSource" là cái gì?
+
+ODBC - Open Database Connectivity: Nó chính là một bộ thư viện mở, có khả năng kết nối với hầu hết các loại cơ sở dữ liệu khác nhau, và nó miễn phí. Được cung cấp bởi Microsoft.
+
+ODBC DataSource: Trên hệ điều hành Window bạn có thể khai báo một kết nối ODBC tới một loại DB nào đó. Và như vậy chúng ta có một nguồn dữ liệu (Data Source).
+
+Trong JDBC API, đã xây dựng sẵn một cầu nối JDBC-ODBC để JDBC có thể nói chuyện được với ODBC Data Source.
+Về tốc độ, cách 1 sẽ nhanh hơn cách 2, vì cách 2 phải sử dụng tới cầu nối.
+
+3. Nhược điểm JDBC
+	*Cần viết nhiều code trước và sau thực hiện query (tạo connection, statement, đóng resultset, đóng connection…)
+	* Cần phải xử lý transaction
+	...
+=> Spring JdbcTemplate cũng tiến hành giao tiếp với database thông qua cơ chế của JDBC nhưng nó cải thiện được các vấn đề trên, cung cấp các method viết query trực tiếp -> tiết kiệm thời gian… Dây là một lớp trung tâm trong Spring JDBC, nó bao gồm các logic phổ biến nhất trong việc sử dụng JDBC API để truy cập vào cơ sở dữ liệu, chẳng hạn như tạo kết nối, tạo các lệnh truy vấn, xóa, sửa, cập nhập dữ liệu... Lớp này có thể tìm thấy trong gói (package) org.springframework.jdbc.core.
+
+### /pom.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.in28minutes.database</groupId>
+	<artifactId>database-demo</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>database-demo</name>
+	<description>Demo project for Spring Boot</description>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.0.0.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+		<pluginRepository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+
+</project>
+```
+---
+
+### /src/main/java/com/in28minutes/database/databasedemo/DatabaseDemoApplication.java
+
+```java
+package com.in28minutes.database.databasedemo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DatabaseDemoApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(DatabaseDemoApplication.class, args);
+	}
+}
+```
+---
+
+### /src/main/java/com/in28minutes/database/databasedemo/entity/Person.java
+
+```java
+package com.in28minutes.database.databasedemo.entity;
+
+import java.util.Date;
+
+public class Person {
+	private int id;
+	private String name;
+	private String location;
+	private Date birthDate;
+
+	public Person(int id, String name, String location, Date birthDate) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.location = location;
+		this.birthDate = birthDate;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public Date getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(Date birthDate) {
+		this.birthDate = birthDate;
+	}
+
+}
+```
+---
+
+### /src/main/java/com/in28minutes/database/databasedemo/jdbc/PersonJbdcDao.java
+
+```java
+package com.in28minutes.database.databasedemo.jdbc;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import com.in28minutes.database.databasedemo.entity.Person;
+
+@Repository
+public class PersonJbdcDao {
+	@Autowired
+	JdbcTemplate jdbcTemplate;
+
+	// BeanPropertyRowMapper dùng để map kết quả của câu lệnh sql vào object
+	public List<Person> findAll() {
+		return jdbcTemplate.query("select * from person", 
+				new BeanPropertyRowMapper(Person.class));
+	}
+}
+```
+---
+
+### /src/main/resources/application.properties
+
+```properties
+spring.h2.console.enabled=true
+```
+---
+
+### /src/main/resources/data.sql
+
+```
+create table person
+(
+   id integer not null,
+   name varchar(255) not null,
+   location varchar(255),
+   birth_date timestamp,
+   primary key(id)
+);
+
+INSERT INTO PERSON (ID, NAME, LOCATION, BIRTH_DATE ) 
+VALUES(10001,  'Ranga', 'Hyderabad',sysdate());
+INSERT INTO PERSON (ID, NAME, LOCATION, BIRTH_DATE ) 
+VALUES(10002,  'James', 'New York',sysdate());
+INSERT INTO PERSON (ID, NAME, LOCATION, BIRTH_DATE ) 
+VALUES(10003,  'Pieter', 'Amsterdam',sysdate());
+
+```
+---
+
+### /src/test/java/com/in28minutes/database/databasedemo/DatabaseDemoApplicationTests.java
+
+```java
+package com.in28minutes.database.databasedemo;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class DatabaseDemoApplicationTests {
+
+	@Test
+	public void contextLoads() {
+	}
+
+}
+```
+---
