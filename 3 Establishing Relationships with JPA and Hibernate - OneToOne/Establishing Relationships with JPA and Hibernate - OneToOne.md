@@ -15,9 +15,17 @@ Bidirectional Relationship
 	+ Serialization : 
 	https://stackjava.com/java/java-serializable-la-gi-serialization-va-deserialization-trong-java.html
 	https://www.baeldung.com/jackson-field-serializable-deserializable-or-not
+	https://shareprogramming.net/jackson-json-de-quy-vo-tan-trong-moi-quan-he-2-chieu/
+	https://stackoverflow.com/questions/25720509/serializing-an-empty-class-with-no-field
+	
 	+ OneToOne - fetch lazy https://www.youtube.com/watch?v=qRWhFkB1D8c
+Resolve Bidirectional Relationship 
+	spring.jackson.serialization.FAIL_ON_EMPTY_BEANS=false
 
-
+Thac mac:
+tai vi sao eager -> lazy ko sao?
+nhung lazy -> lazy error?
+nhung lazy -> eager error?
 
 ### /pom.xml
 
